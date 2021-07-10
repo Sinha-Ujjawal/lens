@@ -1,13 +1,16 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Lens where
 
-import           Forget
+import           Const
+import           Contravariant
 import           Profunctor
+import           Star
+import           Strong
+import           Types
 
-type Optic p s t a b = p a b -> p s t
-type Lens s t a b = forall p . Strong p => Optic p s t a b
-type Lens' s a = Lens s s a a
 
 -- Strong => p a b -> p s t
 -- p a b -> p s b via lmap getter
@@ -21,26 +24,38 @@ lens getter setter =
   dup :: x -> (x, x)
   dup x = (x, x)
 
-over :: (Strong p) => Lens s t a b -> p a b -> p s t
+over :: (Strong p) => Optic p s t a b -> p a b -> p s t
 over = ($)
 
-set :: Lens s t a b -> b -> s -> t
+set :: Optic (->) s t a b -> b -> s -> t
 set lens b = over lens (const b)
 
--- Lens s t a b :: forall p. Strong p => p a b -> p s t
--- We get to choose the Strong Profunctor (because of forall quantifier)
--- So we choose Forget Profunctor, you will get to see why Forget Profunctor is useful here
--- Forget r a b -> Forget r s t
--- Forget (a -> r) -> Forget (s -> r)  ------ (expanding defination of Forget r a b)
--- Now, if we can only get the RHS function of the equation
--- In order to do that we will need an instance of Forget r a b (so that we can pass that to the function and extract RHS)
--- But wait, we can choose r as well. Why not pick a
--- Forget a a b -> Forget a s t
--- Forget (a -> a) -> Forget (s -> a)
--- Ah.., not it's the familiar identity function on the LHS
--- We were able to do all this because of the forall quantifier on p in Lens s t a b, and r in Forget r a b
-view :: (Forget a a b -> Forget a s t) -> s -> a
-view getter = runForget $ getter $ Forget id
+-- AView r s a :: ARepn' (Const r) s a
+-- In Our case, r is a
+-- AView a s a :: ARepn' (Const a) s a
+-- ARepn' f s a = ARepn f s s a a
+-- ARepn f s t a b = Optic (Star f) s t a b
+-- Optic p s t a b = p a b -> p s t
+-- Star f a b = Star {runStar :: a -> f b}
+-- Const a b = Const {getConst :: a}
+-- therefore, ARepn' f s a = Optic (Star f) s s a a
+-- ARepn' f s a = Star f a a -> Star f s s
+-- AView r s a = Star (Const r) a a -> Star (Const r) s s
+-- AView a s a = Star (Const a) a a -> Star (Const a) s s
+-- AView a s a = (Star {runStar :: a -> Const a a}) -> (Star {runStar :: s -> Const s s})
+-- If only we had an instance of Star {runStar :: a -> Const a a}
+-- And, we do
+-- a -> Const a a, can be broken down to a -> Const {getConst :: a}, well that's just Const
+-- we can then Wrap this around Star
+-- therefore, Star Const :: forall a. Star {runStar :: a -> Const a a'}
+view :: AView a s a -> s -> a
+view getter = getConst . runStar (getter (Star Const))
+
+-- View s a = forall p . (Strong p, CoerceR p) => Optic' p s a
+-- Optic' p s a = p a a -> p s s
+-- CoerceR p = forall x . Contravariant (p x)
+to :: (s -> a) -> View s a
+to f = coercer . lmap f
 
 mapped :: Functor f => Optic (->) (f a) (f b) a b
 mapped = (<$>)

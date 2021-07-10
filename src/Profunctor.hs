@@ -15,19 +15,6 @@ class Profunctor p where
 swap :: (a, b) -> (b, a)
 swap (a, b) = (b, a)
 
-class Profunctor p => Strong p where
-  first :: p a a' -> p (a, c) (a', c)
-  first = dimap swap swap . second
-
-  second :: p b b' -> p (c, b) (c, b')
-  second = dimap swap swap . first
-
-  {-# MINIMAL first | second #-}
-
 instance Profunctor (->) where
   -- dimap :: (a' -> a) -> (b -> b') -> (a -> b) -> (a' -> b')
   dimap a'toa btob' atob = btob' . atob . a'toa
-
-instance Strong (->) where
-  -- first :: (a -> a') -> (a, c) -> (a', c')
-  first atoa' (a, c) = (atoa' a, c)

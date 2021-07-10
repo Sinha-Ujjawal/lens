@@ -25,9 +25,16 @@ source-repository head
 
 library
   exposed-modules:
+      Const
+      Contravariant
+      CoStar
+      CoStrong
       Forget
       Lens
       Profunctor
+      Star
+      Strong
+      Types
   other-modules:
       Paths_lens
   hs-source-dirs:
