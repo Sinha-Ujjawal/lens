@@ -1,6 +1,8 @@
+{-# LANGUAGE TupleSections #-}
+
 module CoStrong where
 
-import           Profunctor
+import Profunctor (Profunctor (dimap), swap)
 
 class Profunctor p => CoStrong p where
   unfirst :: p (a, c) (a', c) -> p a a'
@@ -13,4 +15,4 @@ class Profunctor p => CoStrong p where
 
 instance CoStrong (->) where
   -- unfirst :: ((a, c) -> (a', c')) -> (a -> a')
-  unfirst actoa'c' = fst . actoa'c' . (\x -> (x, undefined))
+  unfirst actoa'c' = fst . actoa'c' . (,undefined)

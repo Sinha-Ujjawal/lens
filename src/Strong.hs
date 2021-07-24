@@ -1,6 +1,6 @@
 module Strong where
 
-import           Profunctor
+import Profunctor (Profunctor (dimap), swap)
 
 class Profunctor p => Strong p where
   first :: p a a' -> p (a, c) (a', c)

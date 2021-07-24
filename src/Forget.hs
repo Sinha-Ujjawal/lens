@@ -1,11 +1,11 @@
 module Forget where
 
-import           Contravariant
-import           Profunctor
-import           Strong
+import Contravariant (Contravariant (..))
+import Profunctor (Profunctor (dimap))
+import Strong (Strong (first))
 
-data Forget r a b = Forget
-  { runForget :: (a -> r)
+newtype Forget r a b = Forget
+  { runForget :: a -> r
   }
 
 instance Profunctor (Forget r) where

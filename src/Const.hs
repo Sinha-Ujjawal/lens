@@ -1,13 +1,14 @@
 module Const
-  ( Const(..)
-  ) where
+  ( Const (..),
+  )
+where
 
-import Contravariant
+import Contravariant (Contravariant (..))
 
-newtype Const a b = Const {getConst:: a} deriving (Show, Eq)
+newtype Const a b = Const {getConst :: a} deriving (Show, Eq)
 
 instance Functor (Const a) where
-  -- fmap :: (x -> y) -> Const a x -> Const a 
+  -- fmap :: (x -> y) -> Const a x -> Const a
   fmap _ (Const a) = Const a
 
 instance Contravariant (Const x) where

@@ -1,12 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TupleSections #-}
 
 module Star
-  ( Star(..)
-  ) where
+  ( Star (..),
+  )
+where
 
-import           Contravariant
-import           Profunctor
-import           Strong
+import Contravariant (Contravariant (..))
+import Profunctor (Profunctor (dimap))
+import Strong (Strong (first))
 
 -- a -> f b means a is sort of playing the role of f b
 -- that means, given a "a" there exist a "b" (not necessarily unique)
@@ -19,7 +21,7 @@ instance Functor f => Profunctor (Star f) where
 
 instance Functor f => Strong (Star f) where
   -- first :: Star f a a' -> Star f (a, c) (a', c)
-  first (Star atofa') = Star $ \(a, c) -> flip (,) c <$> atofa' a
+  first (Star atofa') = Star $ \(a, c) -> (,c) <$> atofa' a
 
 instance Contravariant f => Contravariant (Star f x) where
   -- contramap :: (b -> a) -> Star f x a -> Star f x b

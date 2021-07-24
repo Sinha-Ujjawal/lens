@@ -1,16 +1,15 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Lens where
 
-import           Const
-import           Contravariant
-import           Profunctor
-import           Star
-import           Strong
-import           Types
-
+import Const (Const (Const, getConst))
+import Contravariant ()
+import Profunctor (Profunctor (lmap, rmap))
+import Star (Star (Star, runStar))
+import Strong (Strong (first))
+import Types (AView, Lens, Optic, View, coercer)
 
 -- Strong => p a b -> p s t
 -- p a b -> p s b via lmap getter
@@ -20,9 +19,9 @@ import           Types
 lens :: (s -> a) -> (s -> b -> t) -> Lens s t a b
 lens getter setter =
   rmap (\(b, s) -> setter s b) . lmap dup . first . lmap getter
- where
-  dup :: x -> (x, x)
-  dup x = (x, x)
+  where
+    dup :: x -> (x, x)
+    dup x = (x, x)
 
 over :: (Strong p) => Optic p s t a b -> p a b -> p s t
 over = ($)
@@ -62,12 +61,12 @@ mapped = (<$>)
 
 _1 :: Lens (a, c) (b, c) a b
 _1 = lens getter setter
- where
-  getter = fst
-  setter (_, b) a = (a, b)
+  where
+    getter = fst
+    setter (_, b) a = (a, b)
 
 _2 :: Lens (c, a) (c, b) a b
 _2 = lens getter setter
- where
-  getter = snd
-  setter (a, _) b = (a, b)
+  where
+    getter = snd
+    setter (a, _) b = (a, b)
